@@ -1,6 +1,6 @@
 document.body.addEventListener('touchstart', jumpHero, false)
 document.body.addEventListener('mousedown', jumpHero, false)
-document.body.addEventListener('keyup', jumpHero, false)
+document.body.addEventListener('keydown', jumpHero, false)
 
 var game = {
   board: document.getElementById('theBoard'),
@@ -12,9 +12,9 @@ var game = {
   baseY: 200,
   letters: [],
   hero: {
-    width: 50,
+    width: 25,
     height: 50,
-    currentLocation: [100, 150],
+    currentLocation: [],
     isJumping: false,
     jumpHeight: 100,
     jumpInterval: false,
@@ -62,14 +62,19 @@ function clear () {
 function drawHero () {
   var ctx = game.board.getContext('2d')
   ctx.beginPath()
-  ctx.rect(game.hero.currentLocation[0], game.hero.currentLocation[1], game.hero.width, game.hero.height)
-  ctx.stroke()
+  ctx.fillStyle = '#fcd665'
+  ctx.fillRect(game.hero.currentLocation[0], game.hero.currentLocation[1], game.hero.width, game.hero.height)
 }
 
 function jumpHero () {
-  if (game.hero.isJumping) return false
-  console.log('jumping!')
-  game.hero.jumpInterval = setInterval(doJumpStep, 10)
+  if (!game.isRunning) {
+    startGame()
+  } else if (game.hero.isJumping) {
+    return false
+  } else {
+    console.log('jumping!')
+    game.hero.jumpInterval = setInterval(doJumpStep, 10)
+  }
 }
 
 function doJumpStep () {
@@ -106,6 +111,7 @@ function drawLetters () {
   game.letters.forEach(function (letter) {
     var ctx = game.board.getContext('2d')
     ctx.font = '30px Arial'
+    ctx.fillStyle = '#2c2173'
     ctx.fillText(letter.character, letter.currentLocation[0], letter.currentLocation[1])
   })
 }
@@ -113,6 +119,8 @@ function drawLetters () {
 function drawScore () {
   var ctx = game.board.getContext('2d')
   ctx.font = '50px Arial'
+  ctx.textAlign = 'center'
+  ctx.textBaseline = 'middle'
   ctx.strokeText(game.score, game.board.width / 2, game.board.height / 2)
 }
 
@@ -122,10 +130,15 @@ function checkWin () {
     // clear intervals
     clearInterval(game.loop)
     clearInterval(game.letterLoop)
+    game.letters = []
+    game.score = ''
     // draw win
     var ctx = game.board.getContext('2d')
-    ctx.font = '30px Arial'
-    ctx.fillText('WELL DONE!!', 100, 50)
+    ctx.font = '50px Arial'
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'middle'
+    ctx.fillText('WELL DONE!!', game.board.width / 2, game.board.height / 2)
+    game.isRunning = false
   }
 }
 
@@ -139,8 +152,10 @@ function gameLoop () {
 
 function startGame () {
   if (!game.isRunning) {
+    game.isRunning = true
     game.board.width = document.body.scrollWidth
     game.board.height = 200
+    game.hero.currentLocation = [Math.round(game.board.width / 10), Math.round(game.board.height - game.hero.height)]
     game.loop = setInterval(gameLoop, 10)
     game.letterLoop = setInterval(createLetter, 1000)
   }
