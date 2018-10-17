@@ -2,6 +2,21 @@ document.body.addEventListener('touchstart', jumpHero, false)
 document.body.addEventListener('mousedown', jumpHero, false)
 document.body.addEventListener('keydown', jumpHero, false)
 
+function sound(src) {
+  this.sound = document.createElement("audio");
+  this.sound.src = src;
+  this.sound.setAttribute("preload", "auto");
+  this.sound.setAttribute("controls", "none");
+  this.sound.style.display = "none";
+  document.body.appendChild(this.sound);
+  this.play = function(){
+      this.sound.play();
+  }
+  this.stop = function(){
+      this.sound.pause();
+  }
+}
+
 var game = {
   board: document.getElementById('theBoard'),
   isRunning: false,
@@ -11,7 +26,11 @@ var game = {
   score: '',
   baseY: 200,
   letters: [],
+  winSound: new sound('yesyes.mp3'),
   hero: {
+    eatSound: new sound("eat.mp3"),
+    jumpSound: new sound("jump.mp3"),
+    oopsSound: new sound("oops.mp3"),
     width: 25,
     height: 50,
     currentLocation: [],
@@ -47,7 +66,10 @@ function letterCaptured (letter) {
     game.score += letter.character
     // check if captured letter is good
     if (game.word.indexOf(game.score) !== 0) {
+      game.hero.oopsSound.play()
       game.score = ''
+    } else {
+      game.hero.eatSound.play()
     }
     return true
   }
@@ -73,6 +95,7 @@ function jumpHero () {
     return false
   } else {
     console.log('jumping!')
+    game.hero.jumpSound.play()
     game.hero.jumpInterval = setInterval(doJumpStep, 10)
   }
 }
@@ -127,6 +150,7 @@ function drawScore () {
 function checkWin () {
   if (game.score === game.word) {
     clear()
+    game.winSound.play()
     // clear intervals
     clearInterval(game.loop)
     clearInterval(game.letterLoop)
